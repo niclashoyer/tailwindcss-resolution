@@ -1,5 +1,5 @@
 {
-  "name": "tailwindcss-plugin-starter",
+  "name": "tailwindcss-resolution",
   "version": "0.0.0",
   "description": "A short description of the plugin",
   "main": "src/index.js",
@@ -35,7 +35,10 @@
     ]
   },
   "c8": {
-    "exclude": ["jest/customMatchers.js", "**/*.test.js"]
+    "exclude": [
+      "jest/customMatchers.js",
+      "**/*.test.js"
+    ]
   },
   "keywords": [
     "tailwindcss"

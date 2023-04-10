@@ -1,10 +1,10 @@
-const path = require('path')
-const examplePlugin = require('.')
-const postcss = require('postcss')
-const tailwindcss = require('tailwindcss')
+const path = require('path');
+const examplePlugin = require('.');
+const postcss = require('postcss');
+const tailwindcss = require('tailwindcss');
 
 function run(config, css = '@tailwind utilities', plugin = tailwindcss) {
-  let { currentTestName } = expect.getState()
+  let { currentTestName } = expect.getState();
   config = {
     ...{
       plugins: [examplePlugin],
@@ -13,128 +13,40 @@ function run(config, css = '@tailwind utilities', plugin = tailwindcss) {
       }
     },
     ...config,
-  }
+  };
 
   return postcss(plugin(config)).process(css, {
     from: `${path.resolve(__filename)}?test=${currentTestName}`,
-  })
+  });
 }
 
-it('addBase', () => {
+it('matchVariant (media)', () => {
   const config = {
-    content: [{ raw: String.raw`<h1>Level 1</h1><h2>Level 2</h2>` }],
-    corePlugins: {
-      preflight: true,
-    },
-  }
-
-  return run(config, '@tailwind base; @tailwind utilities').then(result => {
-    const h1 = String.raw`h1 {
-  font-size: 1.5rem;
-}`
-    const h2 = String.raw`h2 {
-  font-size: 1.25rem;
-}`
-
-    expect(result.css).toContain(h1)
-    expect(result.css).toContain(h2)
-  })
-})
-
-it('addUtilities', () => {
-  const config = {
-    content: [{ raw: String.raw`
-    <div class="content-hidden"></div>
-    <div class="content-visible"></div>`
-  }],
-  }
+    content: [{
+      raw: String.raw`
+      <div class="resolution-2:hidden"></div>
+      <div class="resolution-[288dpi]:block></div>
+      <div class="resolution-4:hidden"></div>"`
+    }],
+  };
 
   return run(config).then(result => {
     expect(result.css).toMatchCss(String.raw`
-      .content-hidden {
-        content-visibility: hidden;
+      @media (min-resolution: 2dppx) {
+        .resolution-2\:hidden {
+          display: none;
+        }
       }
-
-      .content-visible {
-        content-visibility: visible;
+      @media (min-resolution: 288dpi) {
+        .resolution-\[288dpi\]\:block {
+          display: block;
+        }
       }
-    `)
-  })
-})
-
-it('matchUtilities', () => {
-  const config = { content: [{ raw: String.raw`<div class="tab-2"></div>` }],
-  }
-
-  return run(config).then(result => {
-    expect(result.css).toMatchCss(String.raw`
-      .tab-2 {
-        tab-size: 2;
-      }
-    `)
-  })
-})
-
-it('addComponents', () => {
-  const config = {
-    content: [{ raw: String.raw`<div class="btn"></div>` }],
-    plugins: [
-      examplePlugin({
-        className: 'btn',
-      })
-    ],
-  }
-
-  return run(config, '@tailwind components').then(result => {
-    expect(result.css).toMatchCss(String.raw`
-      .btn {
-        padding: .5rem 1rem;
-        font-weight: 600;
-      }
-    `)
-  })
-})
-
-it('addVariant', () => {
-  const config = { content: [{ raw: String.raw`<div class="optional:hidden"></div>` }],
-  }
-
-  return run(config).then(result => {
-    expect(result.css).toMatchCss(String.raw`
-      .optional\:hidden:optional {
-        display: none;
-      }
-    `)
-  })
-})
-
-it('addVariant (array)', () => {
-  const config = { content: [{ raw: String.raw`<div class="hocus:opacity-0"></div>` }],
-  }
-
-  return run(config).then(result => {
-    expect(result.css).toMatchCss(String.raw`
-      .hocus\:opacity-0:hover {
-        opacity: 0;
-      }
-      .hocus\:opacity-0:focus {
-        opacity: 0;
-      }
-    `)
-  })
-})
-
-it('addVariant (media)', () => {
-  const config = { content: [{ raw: String.raw`<div class="supports-grid:hidden"></div>` }],
-  }
-
-  return run(config).then(result => {
-    expect(result.css).toMatchCss(String.raw`
-      @supports (display: grid) {
-        .supports-grid\:hidden {
+      @media (min-resolution: 4dppx) {
+        .resolution-4\:hidden {
           display: none;
         }
       }
     `)
-  })
-})
+  });
+});

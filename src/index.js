@@ -1,94 +1,54 @@
-const plugin = require('tailwindcss/plugin')
+const plugin = require('tailwindcss/plugin');
 
-const examplePlugin = plugin.withOptions(
-  function (options) {
-    const className = options ? options.className : 'markdown'
+function toDppx(value) {
+  const regex = /([0-9.]+)([A-Za-z]+)/;
+  let str = value + '';
+  let result = str.match(regex);
+  // proper value found
+  if (result.length === 3) {
+    let num = result[1];
+    let unit = result[2].toLowerCase();
+    if (unit === 'dpi') {
+      // css uses fixed 1:96 ratio: https://w3c.github.io/csswg-drafts/css-values-4/#resolution-value
+      return num / 96;
+    } else if (unit === 'dpcm') {
+      // 1 dpcm = 2.54dpi
+      return (num * 2.54) / 96;
+    } else if (unit === 'dppx') {
+      return num;
+    }
+  }
+  // fallback
+  return 0;
+}
 
-    return function ({ addBase, addUtilities, matchUtilities, addComponents, addVariant, theme }) {
-      /**
-       * Add base styles
-       * https://tailwindcss.com/docs/plugins#adding-base-styles
-       */
+const resolutionPlugin = plugin.withOptions(
+  function(options) {
+    const className = options ? options.className : 'markdown';
 
-      addBase({
-        h1: { fontSize: theme('fontSize.2xl') },
-        h2: { fontSize: theme('fontSize.xl') },
-      })
-
-      /**
-       * Static utilities
-       * https://tailwindcss.com/docs/plugins#static-utilities
-       */
-
-      addUtilities({
-        '.content-hidden': {
-          'content-visibility': 'hidden',
-        },
-        '.content-visible': {
-          'content-visibility': 'visible',
-        },
-      })
-
-      /**
-       * Dynamic utilities
-       * https://tailwindcss.com/docs/plugins#dynamic-utilities
-       */
-
-      matchUtilities(
+    return function({ matchVariant, theme }) {
+      matchVariant(
+        'resolution',
+        (value) => `@media (min-resolution: ${value})`,
         {
-          tab: value => ({
-            tabSize: value,
-          }),
-        },
-        {
-          values: theme('tabSize'),
+          values: theme('resolutions'),
+          sort(a, z) {
+            return toDppx(a.value) - toDppx(z.value);
+          }
         }
       )
-
-      /**
-       * Adding components
-       * https://tailwindcss.com/docs/plugins#adding-components
-       */
-
-      addComponents({
-        [`.${className}`]: {
-          padding: '.5rem 1rem',
-          fontWeight: '600',
-        },
-      })
-
-      /**
-       * Add variants
-       * https://tailwindcss.com/docs/plugins#adding-variants
-       */
-
-      // Simple
-      addVariant('optional', '&:optional')
-
-      // Array
-      addVariant('hocus', [
-        '&:hover',
-        '&:focus'
-      ])
-
-      // @media queries
-      addVariant('supports-grid', '@supports (display: grid)')
     }
-  }, function (options) {
-    /**
-     * Provide default values
-     */
+  }, function(options) {
     return {
       theme: {
-        tabSize: {
-          1: '1',
-          2: '2',
-          4: '4',
-          8: '8',
+        resolutions: {
+          2: '2dppx',
+          3: '3dppx',
+          4: '4dppx',
         }
       },
-    }
+    };
   }
 )
 
-module.exports = examplePlugin
+module.exports = resolutionPlugin;
