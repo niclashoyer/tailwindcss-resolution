@@ -67,16 +67,16 @@ Use the provided examples or see the [Tailwind CSS plugin documentation](https:/
 
 ---
 
-# tailwindcss-plugin-name
+# tailwindcss-resolution
 
-Replace this text with a short description of what the plugin does.
+Tailwind plugin to add `resolution-` variants, to target devices based on screen pixel density (retina, dpi).
 
 ## Installation
 
 Install the plugin from npm:
 
 ```sh
-npm install -D tailwindcss-plugin-name
+npm install -D tailwind-resolution
 ```
 
 Then add the plugin to your `tailwind.config.js` file:
@@ -85,6 +85,12 @@ Then add the plugin to your `tailwind.config.js` file:
 // tailwind.config.js
 module.exports = {
   theme: {
+    // default resolutions
+    resolutions: {
+      '2': '2dppx',
+      '3': '3dppx',
+      '4': '4dppx'
+    },
     // ...
   },
   plugins: [
@@ -96,20 +102,21 @@ module.exports = {
 
 ## Usage
 
-Provide instructions for how to use the plugin.
+Add `resolution-` if you need to target specific device resolutions. The following code example will change background image based on dpi:
 
-## Configuration
+```html
+<div class="bg-[url(/example.webp)] resolution-2:bg-url(/example_2x.webp)"></div>
+```
 
-If your plugin is configurable, provide instructions for how to configure it.
+This plugin will generate the following CSS:
 
-```js
-// tailwind.config.js
-module.exports = {
-  plugins: [
-    require('tailwindcss-plugin-name')({
-      className: 'markdown',
-    }),
-    // ...
-  ],
+```css
+.bg-\[url\(\/example\.webp\)\] {
+  background-image: url(/example.webp);
+}
+@media (min-resolution: 2dppx) {
+  .resolution-2\:bg-\[url\(\/example_2x\.webp\)\] {
+    background-image: url(/example_2x.webp);
+  }
 }
 ```
